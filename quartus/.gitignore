@@ -1,0 +1,9 @@
+*.qws
+*.qdf
+build_id.mif
+c5_pin_model_dump.txt
+db
+greybox_tmp
+incremental_db
+jtag.cdf
+output_files
