@@ -36,6 +36,9 @@ import arcadia.gfx.VideoTimingConfig
 import arcadia.mem._
 
 object Config {
+  /** RGB channel width */
+  val COLOR_WIDTH = 8
+
   /** Video timing configuration */
   val videoTimingConfig = VideoTimingConfig(
     clockFreq = 6000000,

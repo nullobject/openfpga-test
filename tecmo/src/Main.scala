@@ -54,12 +54,17 @@ class Main extends Module {
   val io = IO(new Bundle {
     /** Video port */
     val video = Output(new VideoIO)
+    /** RGB output */
+    val rgb = Output(RGB(Config.COLOR_WIDTH.W))
   })
 
   // Video timing
   val videoTiming = Module(new VideoTiming(Config.videoTimingConfig))
   videoTiming.io.offset := SVec2(0.S, 0.S)
   videoTiming.io.timing <> io.video
+
+  // Video output
+  io.rgb := RGB(0.U, 255.U, 0.U)
 }
 
 object Main extends App {
