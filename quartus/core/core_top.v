@@ -380,25 +380,43 @@ core_bridge_cmd icb (
 );
 
 
-wire    pll_core_locked;
+wire sys_clock;
+wire pll_core_locked;
 
 mf_pllbase mp1 (
     .refclk         ( clk_74a ),
     .rst            ( 0 ),
 
-    .outclk_0       ( video_rgb_clock ),
-    .outclk_1       ( video_rgb_clock_90 ),
+    .outclk_0       ( sys_clock ),
+    .outclk_1       ( video_rgb_clock ),
+    .outclk_2       ( video_rgb_clock_90 ),
 
     .locked         ( pll_core_locked )
 );
+
+wire        dram_oe;
+wire [15:0] dram_din;
+
+assign dram_dq = dram_oe ? dram_din : 16'bZ;
 
 wire [3:0] r, g, b;
 assign video_rgb = {r, r, g, g, b, b};
 
 Main main (
-  .clock(video_rgb_clock),
+  .clock(sys_clock),
   .reset(~reset_n),
 
+  .io_sdram_cke(dram_cke),
+  .io_sdram_ras_n(dram_ras_n),
+  .io_sdram_cas_n(dram_cas_n),
+  .io_sdram_we_n(dram_we_n),
+  .io_sdram_oe(dram_oe),
+  .io_sdram_bank(dram_ba),
+  .io_sdram_addr(dram_a),
+  .io_sdram_din(dram_din),
+  .io_sdram_dout(dram_dq),
+
+  .io_videoClock(video_rgb_clock),
   .io_video_hSync(video_hs),
   .io_video_vSync(video_vs),
   .io_video_displayEnable(video_de),

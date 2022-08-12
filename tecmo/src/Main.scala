@@ -37,6 +37,7 @@ import arcadia.mem._
 import arcadia.gfx._
 import chisel3._
 import chisel3.stage.{ChiselGeneratorAnnotation, ChiselStage}
+import arcadia.mem.sdram.{SDRAM, SDRAMIO}
 
 /**
  * The top-level module.
@@ -53,14 +54,23 @@ import chisel3.stage.{ChiselGeneratorAnnotation, ChiselStage}
  */
 class Main extends Module {
   val io = IO(new Bundle {
+    /** SDRAM port */
+    val sdram = SDRAMIO(Config.sdramConfig)
+    /** Video clock */
+    val videoClock = Input(Clock())
     /** Video port */
     val video = Output(new VideoIO)
     /** RGB output */
     val rgb = Output(RGB(Config.COLOR_WIDTH.W))
   })
 
+  // SDRAM
+  val sdram = Module(new SDRAM(Config.sdramConfig))
+  sdram.io.sdram <> io.sdram
+  sdram.io.mem.default()
+
   // Video timing
-  val videoTiming = Module(new VideoTiming(Config.videoTimingConfig))
+  val videoTiming = withClock(io.videoClock) { Module(new VideoTiming(Config.videoTimingConfig)) }
   videoTiming.io.offset := SVec2(0.S, 0.S)
   val video = videoTiming.io.timing
 
@@ -105,7 +115,7 @@ class Main extends Module {
   ))
 
   // Tecmo board
-  val tecmo = Module(new Tecmo)
+  val tecmo = withClock(io.videoClock) { Module(new Tecmo) }
   tecmo.io.rom.progRom <> progRom.io
   tecmo.io.rom.bankRom <> bankRom.io
   tecmo.io.rom.charRom <> charRom.io
