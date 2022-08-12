@@ -392,8 +392,8 @@ mf_pllbase mp1 (
     .locked         ( pll_core_locked )
 );
 
-wire [7:0] r, g, b;
-assign video_rgb = {r, g, b};
+wire [3:0] r, g, b;
+assign video_rgb = {r, r, g, g, b, b};
 
 Main main (
   .clock(video_rgb_clock),

@@ -33,6 +33,7 @@
 package tecmo
 
 import arcadia._
+import arcadia.mem._
 import arcadia.gfx._
 import chisel3._
 import chisel3.stage.{ChiselGeneratorAnnotation, ChiselStage}
@@ -62,16 +63,62 @@ class Main extends Module {
   val videoTiming = Module(new VideoTiming(Config.videoTimingConfig))
   videoTiming.io.offset := SVec2(0.S, 0.S)
   val video = videoTiming.io.timing
-  val pattern = RGB(
-    Mux(video.pos.x(2, 0) === 0.U | video.pos.y(2, 0) === 0.U, 255.U, 0.U),
-    Mux(video.pos.x(4), 255.U, 0.U),
-    Mux(video.pos.y(4), 255.U, 0.U),
-  )
-  val black = RGB(0.U(8.W), 0.U(8.W), 0.U(8.W))
+
+  // Program ROM
+  val progRom = Module(new SinglePortRom(
+    addrWidth = Config.PROG_ROM_ADDR_WIDTH,
+    dataWidth = Config.PROG_ROM_DATA_WIDTH,
+    depth     = 49152,
+    initFile  = "roms/cpu1.mif"
+  ))
+
+  // Bank ROM
+  val bankRom = Module(new SinglePortRom(
+    addrWidth = Config.BANK_ROM_ADDR_WIDTH,
+    dataWidth = Config.BANK_ROM_DATA_WIDTH,
+    depth     = 32768,
+    initFile  = "roms/cpu2.mif"
+  ))
+
+  // Character ROM
+  val charRom = Module(new SinglePortRom(
+    addrWidth = Config.CHAR_ROM_ADDR_WIDTH,
+    dataWidth = Config.CHAR_ROM_DATA_WIDTH,
+    depth     = 8192,
+    initFile  = "roms/char.mif"
+  ))
+
+  // The debug ROM contains alphanumeric character tiles
+  val debugRom = Module(new SinglePortRom(
+    addrWidth = Config.DEBUG_ROM_ADDR_WIDTH,
+    dataWidth = Config.DEBUG_ROM_DATA_WIDTH,
+    depth = 512,
+    initFile = "roms/alpha.mif"
+  ))
+
+  // Tecmo board
+  val tecmo = Module(new Tecmo)
+  tecmo.io.rom.progRom <> progRom.io
+  tecmo.io.rom.bankRom <> bankRom.io
+  tecmo.io.rom.charRom <> charRom.io
+  charRom.io.addr := tecmo.io.rom.charRom.addr(Config.CHAR_ROM_ADDR_WIDTH - 1, 2)
+  tecmo.io.rom.debugRom <> debugRom.io
+  // tecmo.io.rom.progRom <> DataFreezer.freeze(io.cpuClock, memSys.io.in(0)).asReadMemIO
+  // tecmo.io.rom.bankRom <> DataFreezer.freeze(io.cpuClock, memSys.io.in(1)).asReadMemIO
+  // tecmo.io.rom.charRom <> DataFreezer.freeze(io.cpuClock, memSys.io.in(2)).asReadMemIO
+  // tecmo.io.rom.fgRom <> DataFreezer.freeze(io.cpuClock, memSys.io.in(3)).asReadMemIO
+  // tecmo.io.rom.bgRom <> DataFreezer.freeze(io.cpuClock, memSys.io.in(4)).asReadMemIO
+  // tecmo.io.rom.spriteRom <> DataFreezer.freeze(io.cpuClock, memSys.io.in(5))
+  tecmo.io.video <> video
+  tecmo.io.rgb <> io.rgb
+  tecmo.io.flip := false.B
+  tecmo.io.debug := true.B
+
+  val black = RGB(0.U(Config.COLOR_WIDTH.W), 0.U(Config.COLOR_WIDTH.W), 0.U(Config.COLOR_WIDTH.W))
 
   // Video output
-  io.video := RegNext(video)
-  io.rgb := RegNext(Mux(video.displayEnable, pattern, black))
+  io.video <> RegNext(video)
+  io.rgb <> RegNext(Mux(video.displayEnable, tecmo.io.rgb, black))
 }
 
 object Main extends App {
