@@ -36,7 +36,7 @@ import arcadia.Util
 import arcadia.mem._
 import arcadia.mem.arbiter.BurstMemArbiter
 import arcadia.mem.buffer.BurstBuffer
-import arcadia.mister.IOCTL
+import arcadia.pocket.Bridge
 import chisel3._
 import chisel3.util._
 
@@ -72,7 +72,7 @@ class MemSys(config: MemSysConfig) extends Module {
   val io = IO(new Bundle {
     val prog = new Bundle {
       /** ROM download port */
-      val rom = Flipped(AsyncWriteMemIO(IOCTL.ADDR_WIDTH, IOCTL.DATA_WIDTH))
+      val rom = Flipped(AsyncWriteMemIO(Bridge.ADDR_WIDTH, Bridge.DATA_WIDTH))
       /** Asserted when the ROM has finished downloading */
       val done = Input(Bool())
     }
@@ -84,11 +84,11 @@ class MemSys(config: MemSysConfig) extends Module {
     val ready = Output(Bool())
   })
 
-  // The download buffer is used to buffer ROM data from the IOCTL, so that complete words are
+  // The download buffer is used to buffer ROM data from the bridge, so that complete words are
   // written to memory.
   val downloadBuffer = Module(new BurstBuffer(buffer.Config(
-    inAddrWidth = IOCTL.ADDR_WIDTH,
-    inDataWidth = IOCTL.DATA_WIDTH,
+    inAddrWidth = Bridge.ADDR_WIDTH,
+    inDataWidth = Bridge.DATA_WIDTH,
     outAddrWidth = config.addrWidth,
     outDataWidth = config.dataWidth,
     burstLength = config.burstLength

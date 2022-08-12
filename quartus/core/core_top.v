@@ -423,7 +423,12 @@ Main main (
 
   .io_rgb_r(r),
   .io_rgb_g(g),
-  .io_rgb_b(b)
+  .io_rgb_b(b),
+
+  .io_bridge_wr(bridge_wr),
+  .io_bridge_addr(bridge_addr),
+  .io_bridge_dout(bridge_wr_data),
+  .io_bridge_done(dataslot_allcomplete)
 );
 
 ///////////////////////////////////////////////

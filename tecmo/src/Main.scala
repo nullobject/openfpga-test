@@ -33,11 +33,14 @@
 package tecmo
 
 import arcadia._
-import arcadia.mem._
 import arcadia.gfx._
+import arcadia.mem._
+import arcadia.mem.sdram.SDRAM
+import arcadia.mem.sdram.SDRAMIO
+import arcadia.pocket.Bridge
 import chisel3._
-import chisel3.stage.{ChiselGeneratorAnnotation, ChiselStage}
-import arcadia.mem.sdram.{SDRAM, SDRAMIO}
+import chisel3.stage.ChiselGeneratorAnnotation
+import chisel3.stage.ChiselStage
 
 /**
  * The top-level module.
@@ -62,12 +65,19 @@ class Main extends Module {
     val video = Output(new VideoIO)
     /** RGB output */
     val rgb = Output(RGB(Config.COLOR_WIDTH.W))
+    /** Bridge port */
+    val bridge = new Bridge
   })
 
   // SDRAM
   val sdram = Module(new SDRAM(Config.sdramConfig))
   sdram.io.sdram <> io.sdram
-  sdram.io.mem.default()
+
+  // Memory subsystem
+  val memSys = Module(new MemSys(Config.memSysConfig))
+  memSys.io.prog.rom <> io.bridge.rom
+  memSys.io.prog.done := io.bridge.done
+  memSys.io.out <> sdram.io.mem
 
   // Video timing
   val videoTiming = withClock(io.videoClock) { Module(new VideoTiming(Config.videoTimingConfig)) }
@@ -91,12 +101,12 @@ class Main extends Module {
   ))
 
   // Character ROM
-  val charRom = Module(new SinglePortRom(
-    addrWidth = Config.CHAR_ROM_ADDR_WIDTH - 2,
-    dataWidth = Config.CHAR_ROM_DATA_WIDTH,
-    depth     = 8192,
-    initFile  = "roms/char.mif"
-  ))
+  // val charRom = Module(new SinglePortRom(
+  //   addrWidth = Config.CHAR_ROM_ADDR_WIDTH - 2,
+  //   dataWidth = Config.CHAR_ROM_DATA_WIDTH,
+  //   depth     = 8192,
+  //   initFile  = "roms/char.mif"
+  // ))
 
   // Foreground ROM
   val fgRom = Module(new SinglePortRom(
@@ -118,14 +128,14 @@ class Main extends Module {
   val tecmo = withClock(io.videoClock) { Module(new Tecmo) }
   tecmo.io.rom.progRom <> progRom.io
   tecmo.io.rom.bankRom <> bankRom.io
-  tecmo.io.rom.charRom <> charRom.io
-  charRom.io.addr := tecmo.io.rom.charRom.addr(Config.CHAR_ROM_ADDR_WIDTH - 1, 2)
   tecmo.io.rom.fgRom <> fgRom.io
   fgRom.io.addr := tecmo.io.rom.fgRom.addr(Config.FG_ROM_ADDR_WIDTH - 1, 2)
   tecmo.io.rom.debugRom <> debugRom.io
   // tecmo.io.rom.progRom <> DataFreezer.freeze(io.cpuClock, memSys.io.in(0)).asReadMemIO
   // tecmo.io.rom.bankRom <> DataFreezer.freeze(io.cpuClock, memSys.io.in(1)).asReadMemIO
-  // tecmo.io.rom.charRom <> DataFreezer.freeze(io.cpuClock, memSys.io.in(2)).asReadMemIO
+  // tecmo.io.rom.charRom <> charRom.io
+  // charRom.io.addr := tecmo.io.rom.charRom.addr(Config.CHAR_ROM_ADDR_WIDTH - 1, 2)
+  tecmo.io.rom.charRom <> DataFreezer.freeze(io.videoClock, memSys.io.in(0)).asReadMemIO
   // tecmo.io.rom.fgRom <> DataFreezer.freeze(io.cpuClock, memSys.io.in(3)).asReadMemIO
   // tecmo.io.rom.bgRom <> DataFreezer.freeze(io.cpuClock, memSys.io.in(4)).asReadMemIO
   // tecmo.io.rom.spriteRom <> DataFreezer.freeze(io.cpuClock, memSys.io.in(5))

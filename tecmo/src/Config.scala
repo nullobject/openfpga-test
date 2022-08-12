@@ -112,40 +112,11 @@ object Config {
     dataWidth = sdramConfig.dataWidth,
     burstLength = sdramConfig.burstLength,
     slots = Seq(
-      // Program ROM slot
-      SlotConfig(
-        addrWidth = Config.PROG_ROM_ADDR_WIDTH,
-        dataWidth = Config.PROG_ROM_DATA_WIDTH
-      ),
-      // Bank ROM slot
-      SlotConfig(
-        addrWidth = Config.BANK_ROM_ADDR_WIDTH,
-        dataWidth = Config.BANK_ROM_DATA_WIDTH,
-        offset = 0x0c000
-      ),
       // Character ROM slot
       SlotConfig(
         addrWidth = Config.CHAR_ROM_ADDR_WIDTH,
         dataWidth = Config.CHAR_ROM_DATA_WIDTH,
-        offset = 0x14000
-      ),
-      // Foreground ROM slot
-      SlotConfig(
-        addrWidth = Config.FG_ROM_ADDR_WIDTH,
-        dataWidth = Config.FG_ROM_DATA_WIDTH,
-        offset = 0x1c000
-      ),
-      // Background ROM slot
-      SlotConfig(
-        addrWidth = Config.BG_ROM_ADDR_WIDTH,
-        dataWidth = Config.BG_ROM_DATA_WIDTH,
-        offset = 0x3c000
-      ),
-      // Sprite ROM slot
-      SlotConfig(
-        addrWidth = Config.SPRITE_ROM_ADDR_WIDTH,
-        dataWidth = Config.SPRITE_ROM_DATA_WIDTH,
-        offset = 0x5c000
+        offset = 0x00000
       )
     )
   )
