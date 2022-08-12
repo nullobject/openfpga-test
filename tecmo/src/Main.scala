@@ -61,10 +61,17 @@ class Main extends Module {
   // Video timing
   val videoTiming = Module(new VideoTiming(Config.videoTimingConfig))
   videoTiming.io.offset := SVec2(0.S, 0.S)
-  videoTiming.io.timing <> io.video
+  val video = videoTiming.io.timing
+  val pattern = RGB(
+    Mux(video.pos.x(2, 0) === 0.U | video.pos.y(2, 0) === 0.U, 255.U, 0.U),
+    Mux(video.pos.x(4), 255.U, 0.U),
+    Mux(video.pos.y(4), 255.U, 0.U),
+  )
+  val black = RGB(0.U(8.W), 0.U(8.W), 0.U(8.W))
 
   // Video output
-  io.rgb := RGB(0.U, 255.U, 0.U)
+  io.video := RegNext(video)
+  io.rgb := RegNext(Mux(video.displayEnable, pattern, black))
 }
 
 object Main extends App {
