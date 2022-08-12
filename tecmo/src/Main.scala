@@ -82,10 +82,18 @@ class Main extends Module {
 
   // Character ROM
   val charRom = Module(new SinglePortRom(
-    addrWidth = Config.CHAR_ROM_ADDR_WIDTH,
+    addrWidth = Config.CHAR_ROM_ADDR_WIDTH - 2,
     dataWidth = Config.CHAR_ROM_DATA_WIDTH,
     depth     = 8192,
     initFile  = "roms/char.mif"
+  ))
+
+  // Foreground ROM
+  val fgRom = Module(new SinglePortRom(
+    addrWidth = Config.FG_ROM_ADDR_WIDTH - 2,
+    dataWidth = Config.FG_ROM_DATA_WIDTH,
+    depth     = 32768,
+    initFile  = "roms/fg.mif"
   ))
 
   // The debug ROM contains alphanumeric character tiles
@@ -102,6 +110,8 @@ class Main extends Module {
   tecmo.io.rom.bankRom <> bankRom.io
   tecmo.io.rom.charRom <> charRom.io
   charRom.io.addr := tecmo.io.rom.charRom.addr(Config.CHAR_ROM_ADDR_WIDTH - 1, 2)
+  tecmo.io.rom.fgRom <> fgRom.io
+  fgRom.io.addr := tecmo.io.rom.fgRom.addr(Config.FG_ROM_ADDR_WIDTH - 1, 2)
   tecmo.io.rom.debugRom <> debugRom.io
   // tecmo.io.rom.progRom <> DataFreezer.freeze(io.cpuClock, memSys.io.in(0)).asReadMemIO
   // tecmo.io.rom.bankRom <> DataFreezer.freeze(io.cpuClock, memSys.io.in(1)).asReadMemIO

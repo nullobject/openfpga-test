@@ -52,7 +52,7 @@ class GPU extends Module {
     /** Character control port */
     val charCtrl = new LayerCtrlIO
     /** Foreground control port */
-    // val fgCtrl = new LayerCtrlIO
+    val fgCtrl = new LayerCtrlIO
     /** Background control port */
     // val bgCtrl = new LayerCtrlIO
     /** Sprite control port */
@@ -95,10 +95,10 @@ class GPU extends Module {
   charProcessor.io.flip := io.flip
 
   // Foreground processor
-  // val fgProcessor = Module(new LayerProcessor(tileSize = 16, cols = 32, rows = 16))
-  // fgProcessor.io.ctrl <> io.fgCtrl
-  // fgProcessor.io.video <> io.video
-  // fgProcessor.io.flip := io.flip
+  val fgProcessor = Module(new LayerProcessor(tileSize = 16, cols = 32, rows = 16))
+  fgProcessor.io.ctrl <> io.fgCtrl
+  fgProcessor.io.video <> io.video
+  fgProcessor.io.flip := io.flip
 
   // Background processor
   // val bgProcessor = Module(new LayerProcessor(tileSize = 16, cols = 32, rows = 16))
@@ -122,9 +122,8 @@ class GPU extends Module {
   colorMixer.io.spritePriority := 0.U
   colorMixer.io.spriteData := 0.U
   colorMixer.io.charData := charProcessor.io.data
-  // colorMixer.io.fgData := fgProcessor.io.data
+  colorMixer.io.fgData := fgProcessor.io.data
   // colorMixer.io.bgData := bgProcessor.io.data
-  colorMixer.io.fgData := 0.U
   colorMixer.io.bgData := 0.U
   colorMixer.io.debugData := Mux(io.debug, debugLayer.io.data, 0.U)
 

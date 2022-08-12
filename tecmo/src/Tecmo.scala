@@ -95,7 +95,6 @@ class Tecmo extends Module {
   ))
   fgRam.io.clockB := clock
   fgRam.io.portA.default()
-  fgRam.io.portB.default()
 
   // Background RAM
   val bgRam = Module(new TrueDualPortRam(
@@ -138,9 +137,9 @@ class Tecmo extends Module {
   gpu.io.charCtrl.vram <> charRam.io.portB
   gpu.io.charCtrl.tileRom <> io.rom.charRom
   gpu.io.charCtrl.scrollPos := UVec2(0.U, 0.U)
-  // gpu.io.fgCtrl.vram <> fgRam.io.portB
-  // gpu.io.fgCtrl.tileRom <> io.rom.fgRom
-  // gpu.io.fgCtrl.scrollPos := fgScrollReg + UVec2(Config.SCROLL_OFFSET.U, 0.U)
+  gpu.io.fgCtrl.vram <> fgRam.io.portB
+  gpu.io.fgCtrl.tileRom <> io.rom.fgRom
+  gpu.io.fgCtrl.scrollPos := fgScrollReg + UVec2(Config.SCROLL_OFFSET.U, 0.U)
   // gpu.io.bgCtrl.vram <> bgRam.io.portB
   // gpu.io.bgCtrl.tileRom <> io.rom.bgRom
   // gpu.io.bgCtrl.scrollPos := bgScrollReg + UVec2(Config.SCROLL_OFFSET.U, 0.U)

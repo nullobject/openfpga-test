@@ -42,11 +42,11 @@ class RomIO extends Bundle {
   val bankRom = new BankRomIO
   /** Character ROM */
   val charRom = new TileRomIO
-  // /** Foreground ROM */
-  // val fgRom = new TileRomIO
-  // /** Background ROM */
+  /** Foreground ROM */
+  val fgRom = new TileRomIO
+  /** Background ROM */
   // val bgRom = new TileRomIO
-  // /** Sprite ROM */
+  /** Sprite ROM */
   // val spriteRom = new SpriteRomIO
   /** Debug ROM port */
   val debugRom = new TileRomIO
